@@ -1,7 +1,7 @@
 import "react-native-gesture-handler";
 import React, { useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { StatusBar } from "react-native";
+import { StatusBar, StyleSheet, View } from "react-native";
 import * as eva from "@eva-design/eva";
 import {
   ApplicationProvider,
@@ -13,6 +13,9 @@ import {
   Text,
   TopNavigation,
   TopNavigationAction,
+  Avatar,
+  MenuItem,
+  OverflowMenu,
 } from "@ui-kitten/components";
 import { EvaIconsPack } from "@ui-kitten/eva-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -24,38 +27,11 @@ import { NavigationContainer } from "@react-navigation/native";
 // import stores from "./src/stores";
 // Importing pages for navigation
 import LoginPage from "./src/screens/LoginPage";
+import HomePage from "./src/screens/HomePage";
+import EventPage from "./src/screens/EventPage";
+import ProfilePage from "./src/screens/ProfilePage";
 
 const { Navigator, Screen } = createBottomTabNavigator();
-
-const MenuIcon = (props) => <Icon {...props} name="more-vertical" />;
-
-const InfoIcon = (props) => <Icon {...props} name="info" />;
-
-const LogoutIcon = (props) => <Icon {...props} name="log-out" />;
-
-const renderMenuAction = () => (
-  <TopNavigationAction icon={MenuIcon} onPress={toggleMenu} />
-);
-
-const ProfileScreen = () => (
-  <Layout style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-    <Text category="h1">Profile</Text>
-  </Layout>
-);
-
-const EventScreen = () => (
-  <Layout style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-    <Text category="h1">Event</Text>
-  </Layout>
-);
-
-const HomePage = () => {
-  return (
-    <Layout style={{ flex: 1 }}>
-      <Text category="h1">Feed</Text>
-    </Layout>
-  );
-};
 
 const BottomTabBar = ({ navigation, state }) => (
   <BottomNavigation
@@ -71,8 +47,8 @@ const BottomTabBar = ({ navigation, state }) => (
 const TabNavigator = () => (
   <Navigator tabBar={(props) => <BottomTabBar {...props} />}>
     <Screen name="Feed" component={HomePage} />
-    <Screen name="Profile" component={ProfileScreen} />
-    <Screen name="Event" component={EventScreen} />
+    <Screen name="Profile" component={ProfilePage} />
+    <Screen name="Event" component={EventPage} />
   </Navigator>
 );
 
@@ -89,5 +65,13 @@ const App = () => {
     </SafeAreaProvider>
   );
 };
-
+const styles = StyleSheet.create({
+  titleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  logo: {
+    marginHorizontal: 16,
+  },
+});
 export default App;
