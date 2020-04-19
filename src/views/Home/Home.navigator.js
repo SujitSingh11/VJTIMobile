@@ -1,15 +1,27 @@
-import React from 'react'
-import { createStackNavigator } from '@react-navigation/stack'
-import Home from './Home'
+import React from "react";
+import { createStackNavigator } from "@react-navigation/stack";
+import Home from "./Home";
+import Theme from "../../containers/Theme";
 
-const Stack = createStackNavigator()
+const Stack = createStackNavigator();
 
-function HomeNavigator () {
+function HomeNavigator() {
   return (
-    <Stack.Navigator>
-      <Stack.Screen name='Home' component={Home} />
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: Theme.COLORS.WHITE,
+        },
+        headerTintColor: Theme.COLORS.DEFAULT,
+      }}
+    >
+      <Stack.Screen
+        name="Home"
+        component={Home}
+        options={{ title: "My Feed" }}
+      />
     </Stack.Navigator>
-  )
+  );
 }
 
-export default HomeNavigator
+export default HomeNavigator;

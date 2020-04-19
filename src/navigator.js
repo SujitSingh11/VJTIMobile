@@ -3,21 +3,19 @@ import { useSelector, useDispatch } from "react-redux";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import HomeNavigator from "./views/Home/Home.navigator";
-import BlankNavigator from "./views/Blank/Blank.navigator";
+import ProfileNavigator from "./views/Profile/Profile.navigator";
 import LoginNavigator from "./views/Login/Login.navigator";
 import auth from "@react-native-firebase/auth";
 import { login, logout } from "./store/actions";
+import firestore from "@react-native-firebase/firestore";
 
 const Tab = createBottomTabNavigator();
 
 function BottomTabs() {
   return (
     <Tab.Navigator initialRouteName="Home">
-      <Tab.Screen name="Blank1" component={BlankNavigator} />
-      <Tab.Screen name="Blank2" component={BlankNavigator} />
+      <Tab.Screen name="Profile" component={ProfileNavigator} />
       <Tab.Screen name="Home" component={HomeNavigator} />
-      <Tab.Screen name="Blank3" component={BlankNavigator} />
-      <Tab.Screen name="Blank4" component={BlankNavigator} />
     </Tab.Navigator>
   );
 }
@@ -33,8 +31,21 @@ function Navigator() {
   // Handle user state changes
   const onAuthStateChanged = (user) => {
     if (user) {
+      const ref = firestore()
+        .collection("users")
+        .doc(user.uid);
+      ref.set(
+        {
+          uid: user.uid,
+          displayName: user.displayName,
+          email: user.email,
+          photoURL: user.photoURL,
+          lastSignInTime: user.metadata.lastSignInTime,
+        },
+        { merge: true }
+      );
       console.log(user);
-      dispatch(login(user));
+      dispatch(login({ user }));
     } else {
       dispatch(logout());
     }

@@ -1,12 +1,13 @@
-import React from "react";
-import { View, Button, Text } from "react-native";
+import React, { useEffect } from "react";
+import { View, Text, Button } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../store/actions";
 import Style from "../Home/Home.style";
 import auth from "@react-native-firebase/auth";
 import { GoogleSignin } from "@react-native-community/google-signin";
-
-function Home() {
+import firestore from "@react-native-firebase/firestore";
+import Theme from "../../containers/Theme";
+const Home = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.Auth);
   const signOut = async () => {
@@ -22,10 +23,10 @@ function Home() {
 
   return (
     <View style={Style.Home}>
-      <Text>`{user.email}`</Text>
-      <Button title="Logout" onPress={() => signOut()} />
+      <Text>{user.user && user.user.displayName}</Text>
+      <Button title="Signout" color={Theme.COLORS.DEFAULT} onPress={signOut} />
     </View>
   );
-}
+};
 
 export default Home;

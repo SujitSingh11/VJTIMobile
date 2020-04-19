@@ -13,6 +13,7 @@ import Style from "./Login.style";
 import { material } from "react-native-typography";
 import Background from "../../components/Background";
 import { GOOGLE_WEB_CLIENT } from "react-native-dotenv";
+import firestore from "@react-native-firebase/firestore";
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -94,8 +95,14 @@ const Login = () => {
                 size={GoogleSigninButton.Size.Wide}
                 color={GoogleSigninButton.Color.Light}
                 onPress={() =>
-                  onGoogleButtonPress().then(() => {
-                    console.log("Signed in with Google!");
+                  onGoogleButtonPress().then((loggedUser) => {
+                    if (loggedUser.additionalUserInfo.isNewUser) {
+                      const ref = firestore()
+                        .collection("users")
+                        .doc(loggedUser.user.uid)
+                        .set({ collegeId: null }, { merge: true });
+                    }
+                    console.log("SignIn with Google");
                   })
                 }
                 disabled={false}
