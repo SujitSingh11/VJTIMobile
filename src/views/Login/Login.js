@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Image, View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import {
@@ -8,27 +8,14 @@ import {
 } from "@react-native-community/google-signin";
 import auth from "@react-native-firebase/auth";
 import { useDispatch, useSelector } from "react-redux";
-import { login } from "../../store/actions";
-import Style from "./Login.style";
 import { material } from "react-native-typography";
 import Background from "../../components/Background";
-import { GOOGLE_WEB_CLIENT } from "react-native-dotenv";
 import firestore from "@react-native-firebase/firestore";
 
 const Login = () => {
   const dispatch = useDispatch();
   const { isLogging } = useSelector((state) => state.Auth);
-  useEffect(() => {
-    GoogleSignin.configure({
-      webClientId: GOOGLE_WEB_CLIENT,
-      offlineAccess: true,
-      forceConsentPrompt: true,
-      hostedDomain: "",
-      loginHint: "",
-      forceConsentPrompt: true,
-      accountName: "",
-    });
-  });
+
   const onGoogleButtonPress = async () => {
     try {
       // add any configuration settings here:
