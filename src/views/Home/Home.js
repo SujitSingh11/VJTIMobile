@@ -41,12 +41,20 @@ import {
   imagePickerOptions,
   uploadFileToFireBase,
   uploadProgress,
+  deleteUploadedFile,
 } from "../../components/util";
+import ImageViewer from "react-native-image-zoom-viewer";
 
 const Feed = ({ uid, description, image, createTime }) => {
+  const images = [
+    {
+      url: image.uri,
+    },
+  ];
   const [displayName, setDisplayName] = useState(null);
   const [photoURL, setPhotoURL] = useState(null);
-  const userInfo = firestore()
+  const [photoViewer, setPhotoViewer] = useState(false);
+  firestore()
     .collection("users")
     .where("uid", "==", uid)
     .get()
@@ -59,42 +67,64 @@ const Feed = ({ uid, description, image, createTime }) => {
     .catch((error) => {
       console.log("Error getting documents: ", error);
     });
-  const date = createTime.toDate().toISOString();
-  console.log(photoURL);
+  const date = createTime._seconds;
+  const newDate = new Date(date * 1000);
   return (
-    <Content style={{ margin: 7 }}>
+    <TouchableOpacity
+      style={{ margin: 7 }}
+      onPress={() => setPhotoViewer(true)}
+    >
       <Card>
         <CardItem header>
           <Left>
             <Thumbnail source={{ uri: photoURL }} />
             <Body>
               <Text>{displayName}</Text>
-              <Text note>{date}</Text>
+              <Text note>{newDate.toLocaleString()}</Text>
             </Body>
           </Left>
         </CardItem>
-        <CardItem cardBody>
-          <Body>
-            <Image
-              source={image}
-              style={{
-                flex: 1,
-                width: "100%",
-                height: 250,
-                marginBottom: 5,
-              }}
-              resizeMethod="scale"
-              resizeMode="contain"
-            />
-          </Body>
-        </CardItem>
+        {image != "" ? (
+          <CardItem
+            cardBody
+            style={{
+              backgroundColor: Theme.COLORS.SWITCH_OFF,
+            }}
+          >
+            <Body>
+              <Image
+                source={image}
+                style={{
+                  flex: 1,
+                  width: "100%",
+                  height: 250,
+                }}
+                resizeMethod="scale"
+              />
+            </Body>
+          </CardItem>
+        ) : (
+          <></>
+        )}
+
         <CardItem>
           <Body>
             <Text style={{ textAlign: "auto" }}>{description}</Text>
           </Body>
         </CardItem>
       </Card>
-    </Content>
+      {image != "" ? (
+        <Modal
+          isVisible={photoViewer}
+          onBackdropPress={() => setPhotoViewer(false)}
+          onBackButtonPress={() => setPhotoViewer(false)}
+        >
+          <ImageViewer imageUrls={images} />
+        </Modal>
+      ) : (
+        <></>
+      )}
+    </TouchableOpacity>
   );
 };
 const wait = (timeout) => {
@@ -116,6 +146,7 @@ const Home = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.Auth);
   const { notice } = useSelector((state) => state.Notice);
+  const [imagePickerResponse, setImagePickerResponse] = useState(null);
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
@@ -177,7 +208,6 @@ const Home = () => {
       }
     });
   };
-
   const uploadFile = () => {
     ImagePicker.showImagePicker(imagePickerOptions, (imagePickerResponse) => {
       const { didCancel, error } = imagePickerResponse;
@@ -186,6 +216,7 @@ const Home = () => {
       } else if (error) {
         alert("An error occurred: ", error);
       } else {
+        setImagePickerResponse(imagePickerResponse);
         const uploadTask = uploadFileToFireBase(imagePickerResponse);
         monitorFileUpload(uploadTask);
       }
@@ -206,7 +237,7 @@ const Home = () => {
             <Feed
               uid={item.uid}
               description={item.description}
-              image={item.image}
+              image={item.image == null ? "" : item.image}
               createTime={item.createTime}
             />
           )}
@@ -238,6 +269,7 @@ const Home = () => {
       <Modal
         isVisible={modalVisible}
         onBackdropPress={() => setModalVisible(false)}
+        onBackButtonPress={() => setModalVisible(false)}
       >
         <View
           style={{
@@ -286,6 +318,7 @@ const Home = () => {
                         />
                         <TouchableOpacity
                           onPress={() => {
+                            deleteUploadedFile(imagePickerResponse);
                             setImageURI(null);
                           }}
                           style={{
@@ -341,7 +374,7 @@ const Home = () => {
                       marginHorizontal: 5,
                     }}
                     onPress={() => {
-                      const newNotice = {
+                      let newNotice = {
                         uid: user.user.uid,
                         description: description,
                         image: imageURI,
@@ -350,6 +383,7 @@ const Home = () => {
                           new Date()
                         ),
                       };
+
                       firestore()
                         .collection("notice")
                         .add(newNotice)

@@ -16,6 +16,7 @@ function HomeNavigator() {
   useEffect(() => {
     const unsubscribe = firestore()
       .collection("notice")
+      .orderBy("createTime", "desc")
       .onSnapshot((snapshot) => {
         const notice = [];
         if (snapshot.size) {
@@ -37,7 +38,7 @@ function HomeNavigator() {
           unsubscribe();
         };
       });
-  }, [firestore]);
+  }, [firestore()]);
   const headerRight = () => (
     <View style={{ flexDirection: "row", alignItems: "center" }}>
       <MaterialCommunityIcons
