@@ -124,7 +124,16 @@ function Profile() {
   const { user } = useSelector((state) => state.Auth);
   const { myNotice } = useSelector((state) => state.Notice);
   const [refreshing, setRefreshing] = useState(false);
-
+  const [userDetails, setUserDetails] = useState("");
+  useEffect(() => {
+    firestore()
+      .collection("users")
+      .doc(user.user.uid)
+      .get()
+      .then((doc) => {
+        setUserDetails(doc.data());
+      });
+  }, []);
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
     wait(1000).then(() => setRefreshing(false));
@@ -155,19 +164,58 @@ function Profile() {
         <View
           style={{
             alignContent: "center",
+            marginVertical: 5,
           }}
         >
-          <Card style={{ padding: 10 }}>
-            <CardItem header>
-              <Text style={{ fontSize: 25 }}>
-                Let us get to know you better
-              </Text>
+          <Card style={{ padding: 10, backgroundColor: Theme.COLORS.DEFAULT }}>
+            <CardItem header style={{ backgroundColor: Theme.COLORS.DEFAULT }}>
+              <View
+                style={{
+                  alignItems: "center",
+                  width: "100%",
+                  backgroundColor: Theme.COLORS.DEFAULT,
+                }}
+              >
+                <Text style={{ marginBottom: 10, fontSize: 25, color: "#fff" }}>
+                  Account Details
+                </Text>
+                <Thumbnail source={{ uri: user.user.photoURL }} large />
+              </View>
             </CardItem>
-            <CardItem>
-              <Body />
+            <CardItem style={{ backgroundColor: Theme.COLORS.DEFAULT }}>
+              <Body>
+                <Text style={{ color: "#fff" }}>
+                  Name: {userDetails.displayName}
+                </Text>
+                <Text style={{ color: "#fff" }}>
+                  email: {userDetails.email}
+                </Text>
+                <Text style={{ color: "#fff" }}>
+                  College ID: {userDetails.collegeId}
+                </Text>
+                <Text style={{ color: "#fff" }}>
+                  Gender: {userDetails.gender}
+                </Text>
+                <Text style={{ color: "#fff" }}>
+                  Designation: {userDetails.isStaff ? "Staff" : "Student"}
+                </Text>
+                <Text style={{ color: "#fff" }}>
+                  Department: {userDetails.departmentCode}
+                </Text>
+                <Text style={{ color: "#fff" }}>
+                  Course: {userDetails.graduateLevel}
+                </Text>
+                <Text style={{ color: "#fff" }}>Year: {userDetails.year}</Text>
+                <Text style={{ color: "#fff" }}>
+                  Admission Year: {userDetails.yearOfEnrollment}
+                </Text>
+              </Body>
             </CardItem>
           </Card>
         </View>
+        <Text style={{ fontSize: 25, alignSelf: "center", marginVertical: 5 }}>
+          Your Post
+        </Text>
         <FlatList
           data={myNotice}
           renderItem={({ item }) => (

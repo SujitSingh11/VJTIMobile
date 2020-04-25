@@ -105,9 +105,34 @@ function BottomTabs() {
   );
 }
 
-function FirestTimeLogin() {
+function Switch() {
+  const { isAuthenticated } = useSelector((state) => state.Auth);
   const { user } = useSelector((state) => state.Auth);
+  const [isCollegeId, setIsCollegeId] = useState(false);
   const [collegeId, setCollegeId] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const ref = firestore()
+    .collection("users")
+    .doc(user.user.uid);
+  useEffect(() => {
+    ref
+      .get()
+      .then((doc) => {
+        if (doc.exists) {
+          const data = doc.data();
+          if (data.collegeId != null) {
+            setIsCollegeId(true);
+          }
+
+          setIsLoading(false);
+        } else {
+          console.log("No such document!");
+        }
+      })
+      .catch(function(error) {
+        console.log("Error getting document:", error);
+      });
+  }, []);
   const addUserDetails = () => {
     let length = collegeId.toString().length;
     let valid = false;
@@ -183,31 +208,35 @@ function FirestTimeLogin() {
         },
         { merge: true }
       );
-      console.log(user.user.uid);
-      groupRef.get().then((docSnapshot) => {
-        if (docSnapshot.exists) {
-          console.log("Group exist");
-          groupRef.update({
-            users: firebase.firestore.FieldValue.arrayUnion(user.user.uid),
-          });
-        } else {
-          console.log("Group dosen't exist");
-          let newGroup = {
-            createdAt: firebase.firestore.Timestamp.fromDate(new Date()),
-            groupName: groupName,
-            users: [],
-          };
-          let refrence;
-          firestore()
-            .collection("groups")
-            .add(newGroup)
-            .then((ref) => {
-              refrence = ref.id;
-              console.log("Added document with ID in Groups: ", ref.id);
-            });
-          groupRef.get().then();
-        }
-      });
+      setIsCollegeId(true);
+      // groupRef.get().then((docSnapshot) => {
+      //   if (docSnapshot.exists) {
+      //     console.log("Group exist");
+      //     groupRef.get().update({
+      //       users: firebase.firestore.FieldValue.arrayUnion(
+      //         user.user.uid
+      //       ),
+      //     });
+      //   } else {
+      //     console.log("Group dosen't exist");
+      //     let newGroup = {
+      //       createdAt: firebase.firestore.Timestamp.fromDate(new Date()),
+      //       groupName: groupName,
+      //       users: [],
+      //     };
+      //     firestore()
+      //       .collection("groups")
+      //       .add(newGroup)
+      //       .then((ref) => {
+      //         console.log("Added document with ID in Groups: ", ref.id);
+      //       });
+      //     groupRef.get().update({
+      //       regions: firebase.firestore.FieldValue.arrayUnion(
+      //         user.user.uid
+      //       ),
+      //     });
+      //   }
+      // });
     } else {
       Alert.alert(
         "Wrong ID",
@@ -223,84 +252,64 @@ function FirestTimeLogin() {
     }
   };
 
-  return (
-    <View style={styles.container}>
-      <StatusBar barStyle="default" backgroundColor="black" />
-      <View
-        style={{
-          alignContent: "center",
-        }}
-      >
-        <Card style={{ padding: 10 }}>
-          <CardItem header>
-            <Text style={{ fontSize: 25 }}>Let us get to know you better</Text>
-          </CardItem>
-          <CardItem>
-            <Body>
-              <Form style={{ width: "100%" }}>
-                <Item floatingLabel style={{ paddingVertical: 10 }}>
-                  <Label>Enter your college ID</Label>
-                  <Input
-                    onChangeText={(text) => {
-                      setCollegeId(text);
-                    }}
-                  />
-                </Item>
-                <Button
-                  rounded
-                  style={{
-                    alignSelf: "center",
-                    paddingHorizontal: 80,
-                    marginTop: 40,
-                  }}
-                  onPress={addUserDetails}
-                >
-                  <Text>Submit</Text>
-                </Button>
-              </Form>
-            </Body>
-          </CardItem>
-          <CardItem footer>
-            <Left style={{ flexDirection: "row-reverse", marginVertical: 10 }}>
-              <Text note />
-            </Left>
-          </CardItem>
-        </Card>
-      </View>
-    </View>
-  );
-}
-
-function Switch() {
-  const { isAuthenticated } = useSelector((state) => state.Auth);
-  const { user } = useSelector((state) => state.Auth);
-  const [collegeId, setCollegeId] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const ref = firestore()
-    .collection("users")
-    .doc(user.user.uid);
-  ref
-    .get()
-    .then((doc) => {
-      if (doc.exists) {
-        const data = doc.data();
-        setCollegeId(data.collegeId);
-        setIsLoading(false);
-      } else {
-        console.log("No such document!");
-      }
-    })
-    .catch(function(error) {
-      console.log("Error getting document:", error);
-    });
   if (isLoading) {
     return <ActivityIndicator size="large" />;
   } else {
     return (
       <>
         {isAuthenticated ? (
-          collegeId == null ? (
-            <FirestTimeLogin />
+          !isCollegeId ? (
+            <View style={styles.container}>
+              <StatusBar barStyle="default" backgroundColor="black" />
+              <View
+                style={{
+                  alignContent: "center",
+                }}
+              >
+                <Card style={{ padding: 10 }}>
+                  <CardItem header>
+                    <Text style={{ fontSize: 25 }}>
+                      Let us get to know you better
+                    </Text>
+                  </CardItem>
+                  <CardItem>
+                    <Body>
+                      <Form style={{ width: "100%" }}>
+                        <Item floatingLabel style={{ paddingVertical: 10 }}>
+                          <Label>Enter your college ID</Label>
+                          <Input
+                            onChangeText={(text) => {
+                              setCollegeId(text);
+                            }}
+                          />
+                        </Item>
+                        <Button
+                          rounded
+                          style={{
+                            alignSelf: "center",
+                            paddingHorizontal: 80,
+                            marginTop: 40,
+                          }}
+                          onPress={addUserDetails}
+                        >
+                          <Text>Submit</Text>
+                        </Button>
+                      </Form>
+                    </Body>
+                  </CardItem>
+                  <CardItem footer>
+                    <Left
+                      style={{
+                        flexDirection: "row-reverse",
+                        marginVertical: 10,
+                      }}
+                    >
+                      <Text note />
+                    </Left>
+                  </CardItem>
+                </Card>
+              </View>
+            </View>
           ) : (
             <BottomTabs />
           )
