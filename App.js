@@ -7,7 +7,11 @@ import Navigator from "./src/navigator";
 import { SafeAreaView } from "react-native";
 import { GoogleSignin } from "@react-native-community/google-signin";
 import { GOOGLE_WEB_CLIENT } from "react-native-dotenv";
-
+// if (Platform.OS === "android") {
+//   // only android needs polyfill
+//   require("intl"); // import intl object
+//   require("intl/locale-data/jsonp/en-IN"); // load the required locale details
+// }
 export default function App() {
   useEffect(() => {
     GoogleSignin.configure({

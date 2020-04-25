@@ -56,6 +56,7 @@ const Feed = ({ description, image, createTime, displayName, photoURL }) => {
   const [photoViewer, setPhotoViewer] = useState(false);
   const date = createTime._seconds;
   const newDate = new Date(date * 1000);
+  console.log(newDate.toLocaleString());
   return (
     <TouchableOpacity
       style={{ margin: 7 }}
@@ -120,6 +121,9 @@ const wait = (timeout) => {
   });
 };
 const Home = () => {
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.Auth);
+  const { notice } = useSelector((state) => state.Notice);
   const [active, setActive] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalVisibleEvent, setModalVisibleEvent] = useState(false);
@@ -132,9 +136,6 @@ const Home = () => {
   });
   const [imageURI, setImageURI] = useState(null);
   const [groupID, setGroupID] = useState(null);
-  const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.Auth);
-  const { notice } = useSelector((state) => state.Notice);
   const [imagePickerResponse, setImagePickerResponse] = useState(null);
   const [isStartDatePickerVisible, setIsStartDatePickerVisible] = useState(
     false

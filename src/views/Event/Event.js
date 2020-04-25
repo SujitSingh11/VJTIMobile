@@ -152,22 +152,6 @@ function Profile() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <View
-          style={{
-            alignContent: "center",
-          }}
-        >
-          <Card style={{ padding: 10 }}>
-            <CardItem header>
-              <Text style={{ fontSize: 25 }}>
-                Let us get to know you better
-              </Text>
-            </CardItem>
-            <CardItem>
-              <Body />
-            </CardItem>
-          </Card>
-        </View>
         <FlatList
           data={myNotice}
           renderItem={({ item }) => (

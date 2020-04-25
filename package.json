@@ -22,6 +22,7 @@
     "@react-navigation/native": "^5.1.5",
     "@react-navigation/stack": "^5.2.10",
     "galio-framework": "^0.6.3",
+    "intl": "^1.2.5",
     "metro-pnpm": "^0.45.6-vjpr.3",
     "native-base": "^2.13.12",
     "react": "16.9.0",

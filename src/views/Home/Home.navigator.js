@@ -40,7 +40,6 @@ function HomeNavigator() {
               groupID,
               createTime,
             });
-            console.log(doc.data());
           });
           dispatch(getFeed(notice));
         }
