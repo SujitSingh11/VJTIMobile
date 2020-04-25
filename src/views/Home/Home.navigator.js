@@ -18,13 +18,23 @@ function HomeNavigator() {
       .collection("notice")
       .orderBy("createTime", "desc")
       .onSnapshot((snapshot) => {
-        const notice = [];
+        let notice = [];
         if (snapshot.size) {
           snapshot.forEach((doc) => {
-            const { uid, image, description, groupID, createTime } = doc.data();
+            const {
+              uid,
+              image,
+              description,
+              groupID,
+              createTime,
+              displayName,
+              photoURL,
+            } = doc.data();
             notice.push({
               noticeId: doc.id,
               uid,
+              displayName,
+              photoURL,
               description,
               image,
               groupID,
@@ -38,7 +48,7 @@ function HomeNavigator() {
           unsubscribe();
         };
       });
-  }, [firestore()]);
+  }, []);
   const headerRight = () => (
     <View style={{ flexDirection: "row", alignItems: "center" }}>
       <MaterialCommunityIcons

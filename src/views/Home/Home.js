@@ -44,29 +44,16 @@ import {
   deleteUploadedFile,
 } from "../../components/util";
 import ImageViewer from "react-native-image-zoom-viewer";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 
-const Feed = ({ uid, description, image, createTime }) => {
+const Feed = ({ description, image, createTime, displayName, photoURL }) => {
   const images = [
     {
       url: image.uri,
     },
   ];
-  const [displayName, setDisplayName] = useState(null);
-  const [photoURL, setPhotoURL] = useState(null);
+
   const [photoViewer, setPhotoViewer] = useState(false);
-  firestore()
-    .collection("users")
-    .where("uid", "==", uid)
-    .get()
-    .then((querySnapshot) => {
-      querySnapshot.forEach((doc) => {
-        setDisplayName(doc.data().displayName);
-        setPhotoURL(doc.data().photoURL);
-      });
-    })
-    .catch((error) => {
-      console.log("Error getting documents: ", error);
-    });
   const date = createTime._seconds;
   const newDate = new Date(date * 1000);
   return (
@@ -135,8 +122,10 @@ const wait = (timeout) => {
 const Home = () => {
   const [active, setActive] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [modalVisibleEvent, setModalVisibleEvent] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [description, setDescription] = useState(null);
+  const [descriptionEvent, setDescriptionEvent] = useState(null);
   const [upload, setUpload] = useState({
     loading: false,
     progress: 0,
@@ -147,7 +136,27 @@ const Home = () => {
   const { user } = useSelector((state) => state.Auth);
   const { notice } = useSelector((state) => state.Notice);
   const [imagePickerResponse, setImagePickerResponse] = useState(null);
+  const [isStartDatePickerVisible, setIsStartDatePickerVisible] = useState(
+    false
+  );
+  const [isEndDatePickerVisible, setIsEndDatePickerVisible] = useState(false);
+  const [eventStart, setEventStart] = useState(null);
+  const [eventEnd, setEventEnd] = useState(null);
+  const showStartDatePicker = () => {
+    setIsStartDatePickerVisible(true);
+  };
 
+  const hideStartDatePicker = () => {
+    setIsStartDatePickerVisible(false);
+  };
+
+  const showEndDatePicker = () => {
+    setIsEndDatePickerVisible(true);
+  };
+
+  const hideEndDatePicker = () => {
+    setIsEndDatePickerVisible(false);
+  };
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
     wait(1000).then(() => setRefreshing(false));
@@ -179,9 +188,19 @@ const Home = () => {
       console.error(error);
     }
   };
-
+  const handleStartDate = (date) => {
+    hideStartDatePicker();
+    setEventStart(date.toLocaleString());
+  };
+  const handleEndDate = (date) => {
+    hideEndDatePicker();
+    setEventEnd(date.toLocaleString());
+  };
   const toggleModal = () => {
     setModalVisible(!modalVisible);
+  };
+  const toggleModalEvent = () => {
+    setModalVisibleEvent(!modalVisibleEvent);
   };
 
   const monitorFileUpload = (task) => {
@@ -235,7 +254,8 @@ const Home = () => {
           data={notice}
           renderItem={({ item }) => (
             <Feed
-              uid={item.uid}
+              displayName={item.displayName}
+              photoURL={item.photoURL}
               description={item.description}
               image={item.image == null ? "" : item.image}
               createTime={item.createTime}
@@ -248,16 +268,22 @@ const Home = () => {
         active={active}
         direction="up"
         containerStyle={{}}
-        style={{ backgroundColor: Theme.COLORS.PRIMARY }}
+        style={{ backgroundColor: Theme.COLORS.ICON }}
         position="bottomRight"
         onPress={() => setActive(!active)}
       >
         <MaterialCommunityIcons name="menu" />
         <Button
-          style={{ backgroundColor: Theme.COLORS.SUCCESS }}
+          style={{ backgroundColor: Theme.COLORS.ICON }}
           onPress={toggleModal}
         >
-          <MaterialCommunityIcons name="plus" color={Theme.COLORS.WHITE} />
+          <MaterialCommunityIcons name="card-text" color={Theme.COLORS.WHITE} />
+        </Button>
+        <Button
+          style={{ backgroundColor: Theme.COLORS.ICON }}
+          onPress={toggleModalEvent}
+        >
+          <MaterialCommunityIcons name="calendar" color={Theme.COLORS.WHITE} />
         </Button>
         <Button
           style={{ backgroundColor: Theme.COLORS.ERROR }}
@@ -376,6 +402,8 @@ const Home = () => {
                     onPress={() => {
                       let newNotice = {
                         uid: user.user.uid,
+                        displayName: user.user.displayName,
+                        photoURL: user.user.photoURL,
                         description: description,
                         image: imageURI,
                         groupID: groupID,
@@ -396,6 +424,127 @@ const Home = () => {
                     }}
                   >
                     <Text>Add Notice</Text>
+                  </Button>
+                </Left>
+              </CardItem>
+            </Card>
+          </Content>
+        </View>
+      </Modal>
+      <Modal
+        isVisible={modalVisibleEvent}
+        onBackdropPress={() => setModalVisibleEvent(false)}
+        onBackButtonPress={() => setModalVisibleEvent(false)}
+      >
+        <View
+          style={{
+            flex: 1,
+          }}
+        >
+          <Content padder>
+            <Card>
+              <CardItem header>
+                <Text style={{ fontSize: 25 }}>Add Event</Text>
+              </CardItem>
+              <CardItem>
+                <Body>
+                  <Form style={{ width: "100%" }}>
+                    <Textarea
+                      rowSpan={5}
+                      bordered
+                      placeholder="Event Description"
+                      style={{ marginBottom: 10 }}
+                      onChangeText={(text) => {
+                        setDescriptionEvent(text);
+                      }}
+                    />
+                    <TouchableOpacity
+                      onPress={showStartDatePicker}
+                      style={{
+                        flexDirection: "row-reverse",
+                        marginVertical: 15,
+                        alignItems: "center",
+                      }}
+                    >
+                      <Text>Event Start At</Text>
+                      <MaterialCommunityIcons
+                        name="calendar-range"
+                        color="#222"
+                        style={{ fontSize: 20, marginHorizontal: 5 }}
+                      />
+                    </TouchableOpacity>
+                    <DateTimePickerModal
+                      isVisible={isStartDatePickerVisible}
+                      mode="datetime"
+                      onConfirm={handleStartDate}
+                      onCancel={hideStartDatePicker}
+                    />
+                    <TouchableOpacity
+                      onPress={showEndDatePicker}
+                      style={{
+                        flexDirection: "row-reverse",
+                        marginVertical: 15,
+                        alignItems: "center",
+                      }}
+                    >
+                      <Text>Event End At</Text>
+                      <MaterialCommunityIcons
+                        name="calendar-range"
+                        color="#222"
+                        style={{ fontSize: 20, marginHorizontal: 5 }}
+                      />
+                    </TouchableOpacity>
+
+                    <DateTimePickerModal
+                      isVisible={isEndDatePickerVisible}
+                      mode="datetime"
+                      onConfirm={handleEndDate}
+                      onCancel={hideEndDatePicker}
+                    />
+                  </Form>
+                </Body>
+              </CardItem>
+              <CardItem footer>
+                <Left style={{ flexDirection: "row-reverse" }}>
+                  <Button
+                    onPress={toggleModalEvent}
+                    style={{
+                      backgroundColor: Theme.COLORS.ERROR,
+                      marginHorizontal: 5,
+                    }}
+                  >
+                    <Text>Close</Text>
+                  </Button>
+                  <Button
+                    style={{
+                      backgroundColor: Theme.COLORS.DEFAULT,
+                      marginHorizontal: 5,
+                    }}
+                    onPress={() => {
+                      let newEvent = {
+                        uid: user.user.uid,
+                        displayName: user.user.displayName,
+                        photoURL: user.user.photoURL,
+                        descriptionEvent: descriptionEvent,
+                        groupID: groupID,
+                        createTime: firebase.firestore.Timestamp.fromDate(
+                          new Date()
+                        ),
+                        eventStart: eventStart,
+                        eventEnd: eventEnd,
+                      };
+
+                      firestore()
+                        .collection("events")
+                        .add(newEvent)
+                        .then((ref) => {
+                          console.log("Added document with ID: ", ref.id);
+                          setModalVisibleEvent(!modalVisibleEvent);
+                          setDescriptionEvent(null);
+                        });
+                    }}
+                  >
+                    <Text>Add Event</Text>
                   </Button>
                 </Left>
               </CardItem>
